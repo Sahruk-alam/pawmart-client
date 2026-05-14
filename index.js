@@ -28,13 +28,19 @@ async function run() {
    
 app.get ('/listings',async(req,res)=>{
   const result=await listingsCollection.find().toArray()
-  console.log(result)
-
   res.send(result)
 })
 
-
-
+app.get("/recent-listings", async (req, res) => {
+  const result = await listingsCollection.find().limit(6).toArray();
+  console.log(result);
+  res.send(result);
+});
+app.get("/products/category/:categoryName", async (req, res) => {
+    const categoryName = decodeURIComponent(req.params.categoryName);
+  const result = await listingsCollection.find({ category: categoryName }).toArray();
+  res.send(result);
+});
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
