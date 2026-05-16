@@ -1,11 +1,11 @@
 const express = require('express')
 const cors = require('cors')
 const app = express()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = 3000
 const uri = "mongodb+srv://pawmart-db:pawmart1234@cluster0.jfbqb9o.mongodb.net/?appName=Cluster0";
 app.use(cors())
-
+app.use(express.json())
 
 
 app.get('/', (req, res) => {
@@ -41,6 +41,14 @@ app.get("/products/category/:categoryName", async (req, res) => {
   const result = await listingsCollection.find({ category: categoryName }).toArray();
   res.send(result);
 });
+  
+app.post('/listings', async (req, res) => {
+  const newListing = req.body; 
+  const result = await listingsCollection.insertOne(newListing);
+  res.send(result);
+});
+
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
