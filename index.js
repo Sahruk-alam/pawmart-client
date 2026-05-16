@@ -25,6 +25,7 @@ async function run() {
     await client.connect();
     const db=client.db('pawmart-db')
     const listingsCollection=db.collection('listings') 
+    const ordersCollection=db.collection('orders')
    
 app.get ('/listings',async(req,res)=>{
   const result=await listingsCollection.find().toArray()
@@ -53,6 +54,12 @@ app.get('/listings/:id', async (req, res) => {
   const query = { _id: new ObjectId(id) };
   const result = await listingsCollection.findOne(query);
   console.log(result);
+  res.send(result);
+});
+
+app.post('/orders', async (req, res) => {
+  const newOrder = req.body; 
+  const result = await ordersCollection.insertOne(newOrder);
   res.send(result);
 });
 
