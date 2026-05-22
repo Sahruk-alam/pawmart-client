@@ -70,6 +70,20 @@ app.get('/orders', async (req, res) => {
   res.send(result);
 });
 
+app.get('/my-listings', async (req, res) => {
+  const email = req.query.email;
+  const query = { email };
+  const result = await listingsCollection.find(query).toArray();
+  res.send(result);
+});
+
+app.delete('/listings/:id', async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const result = await listingsCollection.deleteOne(query);
+  res.send(result);
+});
+
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
