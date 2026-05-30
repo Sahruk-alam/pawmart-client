@@ -34,9 +34,9 @@ app.get ('/listings',async(req,res)=>{
 
 app.get("/recent-listings", async (req, res) => {
   const result = await listingsCollection.find().limit(6).toArray();
-  console.log(result);
   res.send(result);
 });
+
 app.get("/products/category/:categoryName", async (req, res) => {
     const categoryName = decodeURIComponent(req.params.categoryName);
   const result = await listingsCollection.find({ category: categoryName }).toArray();
@@ -53,7 +53,6 @@ app.get('/listings/:id', async (req, res) => {
   const id = req.params.id;
   const query = { _id: new ObjectId(id) };
   const result = await listingsCollection.findOne(query);
-  console.log(result);
   res.send(result);
 });
 
@@ -77,12 +76,24 @@ app.get('/my-listings', async (req, res) => {
   res.send(result);
 });
 
-app.delete('/listings/:id', async (req, res) => {
+app.delete('/my-listings/:id', async (req, res) => {
   const id = req.params.id;
   const query = { _id: new ObjectId(id) };
   const result = await listingsCollection.deleteOne(query);
   res.send(result);
 });
+
+app.put('/my-listings/:id', async (req, res) => {
+
+  const id = req.params.id;
+  const updatedData = req.body;
+
+  const query = { _id: new ObjectId(id) };
+  const update = { $set: updatedData };
+  const result = await listingsCollection.updateOne(query, update);
+  res.send(result);
+});
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
