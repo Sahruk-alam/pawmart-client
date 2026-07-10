@@ -1,17 +1,45 @@
+require('dotenv').config();
 const express = require('express')
 const cors = require('cors')
 const app = express()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const port = 3000
-const uri = "mongodb+srv://pawmart-db:pawmart1234@cluster0.jfbqb9o.mongodb.net/?appName=Cluster0";
+const port = process.env.PORT || 3000;
+const admin = require("firebase-admin");
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getAuth } = require("firebase-admin/auth");
+const serviceAccount = require("./pawmart-shop.json");
+
+initializeApp({
+  credential: cert(serviceAccount),
+});
+
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.jfbqb9o.mongodb.net/?appName=Cluster0`;
+//middlewares
 app.use(cors())
 app.use(express.json())
 
+const logger=(req,res,next)=>{
+  next();
+}
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
-
+const verifyFirebaseToken = async (req, res, next) => {
+  if(!req.headers.authorization ) {
+    return res.status(401).send({ message: 'Unauthorized access' });
+  }
+  const token = req.headers.authorization.split(' ')[1];
+  if (!token) {
+    return res.status(401).send({ message: 'Unauthorized access' });
+  }
+try{
+  const userInfo=await getAuth().verifyIdToken(token);
+  req.token_email=userInfo.email;
+  next();
+} 
+catch (error) {
+  return res.status(401).send({ message: 'Unauthorized access' });
+}
+ 
+}
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -69,25 +97,27 @@ app.get('/orders', async (req, res) => {
   res.send(result);
 });
 
-app.get('/my-listings', async (req, res) => {
-  const email = req.query.email;
+app.get('/my-listings',logger,verifyFirebaseToken, async (req, res) => {
+  console.log('headers:',req)
+  const email = req.query.email; 
   const query = { email };
+  if (req.token_email !== email) {
+    return res.status(403).send({ message: 'Forbidden access' });
+  }
   const result = await listingsCollection.find(query).toArray();
   res.send(result);
 });
 
-app.delete('/my-listings/:id', async (req, res) => {
+app.delete('/my-listings/:id',logger,verifyFirebaseToken, async (req, res) => {
   const id = req.params.id;
   const query = { _id: new ObjectId(id) };
   const result = await listingsCollection.deleteOne(query);
   res.send(result);
 });
 
-app.put('/my-listings/:id', async (req, res) => {
-
+app.put('/my-listings/:id',logger,verifyFirebaseToken, async (req, res) => {
   const id = req.params.id;
   const updatedData = req.body;
-
   const query = { _id: new ObjectId(id) };
   const update = { $set: updatedData };
   const result = await listingsCollection.updateOne(query, update);
@@ -95,7 +125,7 @@ app.put('/my-listings/:id', async (req, res) => {
 });
 
 
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
   
