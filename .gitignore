@@ -1,3 +1,4 @@
 node_modules
 .env
 pawmart-shop.json
+.vercel
