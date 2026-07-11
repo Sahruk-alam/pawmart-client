@@ -137,6 +137,3 @@ app.put('/my-listings/:id',logger,verifyFirebaseToken, async (req, res) => {
 }
 run().catch(console.dir);
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
