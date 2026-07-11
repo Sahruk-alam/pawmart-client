@@ -7,7 +7,9 @@ const port = process.env.PORT || 3000;
 const admin = require("firebase-admin");
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getAuth } = require("firebase-admin/auth");
-
+// index.js
+const decoded = Buffer.from(process.env.FIREBASE_SERVICE_KEY, "base64").toString("utf8");
+const serviceAccount = JSON.parse(decoded);
 
 initializeApp({
   credential: cert(serviceAccount),
@@ -22,9 +24,7 @@ const logger=(req,res,next)=>{
   next();
 }
 
-// index.js
-const decoded = Buffer.from(process.env.FIREBASE_SERVICE-KEY, "base64").toString("utf8");
-const serviceAccount = JSON.parse(decoded);
+
 
 const verifyFirebaseToken = async (req, res, next) => {
   if(!req.headers.authorization ) {
@@ -53,7 +53,7 @@ const client = new MongoClient(uri, {
 });
 async function run() {
   try {
-
+    await client.connect();
     const db=client.db('pawmart-db')
     const listingsCollection=db.collection('listings') 
     const ordersCollection=db.collection('orders')
@@ -128,7 +128,7 @@ app.put('/my-listings/:id',logger,verifyFirebaseToken, async (req, res) => {
 });
 
 
-    // await client.db("admin").command({ ping: 1 });
+
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
   
